@@ -1,0 +1,29 @@
+{
+  "name": "ddm-ia-pricier",
+  "version": "1.0.0",
+  "description": "buscador de preços com IA",
+  "keywords": [
+    "busca",
+    "search",
+    "price",
+    "cost",
+    "IA",
+    "buy",
+    "money"
+  ],
+  "license": "MIT",
+  "author": "Lumora",
+  "type": "module",
+  "main": "server.js",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build --workspaces",
+    "start": "npm run start -w backend"
+  }
+}
