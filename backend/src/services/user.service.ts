@@ -1,7 +1,8 @@
 import User from "../models/User.js";
+import bcrypt from "bcrypt";
 
 interface userDTO {
-    user: string,
+    name: string,
     picture: string,
     email: string,
     telephone: string,
@@ -31,9 +32,17 @@ export async function createNewUser(data: userDTO) {
         throw new Error("Já existe um usuário com este email.");
     }
 
+    const hashedPassword = await bcrypt.hash(data.pass, 10);
+
+    console.log("DADOS PARA CRIAR:", {
+    ...data,
+    pass: hashedPassword
+    });
+
     const user = await User.create({
-        data
-    } as any);
+        ...data,
+        pass: hashedPassword
+    });
 
     return user;
 }
@@ -45,6 +54,10 @@ export async function loginUser(email: number, pass: string) {
 
     if (!user) {
         throw new Error("Email ou senha inválidos.");
+    }
+
+    if (await bcrypt.compare(user.pass, pass)){
+        throw new Error("Email ou senha inválidos.")
     }
 
     return (user);

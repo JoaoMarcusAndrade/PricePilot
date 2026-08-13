@@ -1,70 +1,78 @@
-import Chat from "../models/Chat"
+import Chat from "../models/Chat.js";
 
-interface userDTO {
-    user: string,
-    picture: string,
-    email: string,
-    telephone: string,
-    pass: string
+interface createChatDTO {
+    name: string;
+    content: string;
+}
 
+interface updateChatDTO {
+    name?: string;
+    content?: string;
 }
 
 export async function getHistory(userId: number) {
     try {
         const userHistory = await Chat.findAll({
             where: {
-                userId: userId
-            }
+                userId
+            },
+            order: [["createdAt", "ASC"]]
         });
 
         return userHistory;
     } catch (error: any) {
-        throw new Error(`Falha ao buscar: ${error.message}`);
+        throw new Error(`Falha ao buscar histórico: ${error.message}`);
     }
 }
 
-export async function addNewChat(data: userDTO) {
-    const existingUser = await User.findOne({
-        where: { email: data.email }
-    });
-
-    if (existingUser) {
-        throw new Error("Já existe um usuário com este email.");
-    }
-
-    const user = await User.create({
-        data
-    } as any);
-
-    return user;
-}
-
-export async function editChat(userId: number, data: userDTO) {
+export async function addNewChat(
+    data: createChatDTO,
+    userId: number
+) {
     try {
-        const user = await History.(userId);
+        const chat = await Chat.create({
+            name: data.name,
+            content: data.content,
+            userId
+        });
 
-        if (!user) {
-            throw new Error("Usuário não encontrado");
+        return chat;
+    } catch (error: any) {
+        throw new Error(`Falha ao criar novo chat: ${error.message}`);
+    }
+}
+
+export async function editChat(
+    chatId: number,
+    data: updateChatDTO
+) {
+    try {
+        const chat = await Chat.findByPk(chatId);
+
+        if (!chat) {
+            throw new Error("Chat não encontrado");
         }
 
-        await user.update(data)
+        await chat.update(data);
 
-        return(user);
+        return chat;
     } catch (error: any) {
-        throw new Error(`Falha ao editar usuário: ${error.message}`);
+        throw new Error(`Falha ao editar conversa: ${error.message}`);
     }
 }
 
-export async function deleteAcount(userId: number) {
+export async function deleteChat(chatId: number) {
     try {
-        const user = await User.findByPk(userId);
+        const chat = await Chat.findByPk(chatId);
 
-        if (!user) {
-            throw new Error("Usuário não encontrado");
+        if (!chat) {
+            throw new Error("Chat não encontrado");
         }
 
-        await user.destroy();
+        await chat.destroy();
+
+        return;
     } catch (error: any) {
-        throw new Error(`Falha ao deletar usuário: ${error.message}`);
+        throw new Error(`Falha ao deletar chat: ${error.message}`);
     }
 }

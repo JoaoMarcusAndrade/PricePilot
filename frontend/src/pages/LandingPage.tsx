@@ -1,9 +1,9 @@
 import { ArrowRight, Check, Search, ShieldCheck, Sparkles, TrendingDown, Zap } from 'lucide-react';
 import Logo from '@/components/Logo';
-import { useAuth } from '@/lib/auth';
 
 type Props = {
   onStart: (prompt?: string) => void;
+  onAuth: () => void;
 };
 
 const steps = [
@@ -14,9 +14,7 @@ const steps = [
 
 const trustedStores = ['Amazon', 'Mercado Livre', 'Magazine Luiza', 'Americanas', 'Shopee'];
 
-export default function LandingPage({ onStart }: Props) {
-  const { user } = useAuth();
-  const ctaLabel = user ? 'Ir para o chat' : 'Começar agora';
+export default function LandingPage({ onStart, onAuth }: Props) {
   return (
     <div className="min-h-screen overflow-hidden bg-white">
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
@@ -24,9 +22,9 @@ export default function LandingPage({ onStart }: Props) {
         <nav className="hidden items-center gap-8 text-sm font-medium text-ink-600 md:flex">
           <a href="#como-funciona" className="transition-colors hover:text-brand-600">Como funciona</a>
           <a href="#vantagens" className="transition-colors hover:text-brand-600">Vantagens</a>
-          <button onClick={() => onStart()} className="rounded-full bg-ink-900 px-5 py-2.5 text-white transition-all hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/20">{ctaLabel}</button>
+          <button onClick={onAuth} className="rounded-full bg-ink-900 px-5 py-2.5 text-white transition-all hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/20">Entrar / cadastrar</button>
         </nav>
-        <button onClick={() => onStart()} className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white md:hidden">{user ? 'Chat' : 'Entrar'}</button>
+        <button onClick={onAuth} className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white md:hidden">Entrar</button>
       </header>
 
       <main>

@@ -2,7 +2,14 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "../database/index.DB.js";
 
 
-class User extends Model { }
+class User extends Model {
+    declare id: number;
+    declare name: string;
+    declare picture: string;
+    declare email: string;
+    declare telephone: string;
+    declare pass: string;
+}
 
 
 User.init({
@@ -35,7 +42,7 @@ User.init({
 
     telephone: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
         validate: {
             is: {
                 // Aceita fixos (10 dígitos) ou celulares (11 dígitos) com DDD

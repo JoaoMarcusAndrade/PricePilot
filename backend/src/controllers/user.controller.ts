@@ -5,10 +5,10 @@ export const userController = {
     async getUser(req: Request, res: Response) {
         const { userId } = req.params
 
-        if (!userId){
+        if (!userId) {
             return res.status(400).json({ error: "há dados faltando" })
         }
-        
+
         const userIdNum = Number(userId)
         try {
             const user = await getUser(userIdNum)
@@ -26,7 +26,17 @@ export const userController = {
             const user = await createNewUser(req.body)
             return res.status(201).json(user);
         } catch (error: any) {
-            return res.status(500).json({ error: error.message })
+            console.error("ERRO COMPLETO:", error);
+            console.error("ERROS DE VALIDAÇÃO:", error.errors);
+
+            return res.status(500).json({
+                error: error.message,
+                details: error.errors?.map((err: any) => ({
+                    field: err.path,
+                    message: err.message,
+                    value: err.value
+                }))
+            });
         }
     },
 
@@ -43,8 +53,8 @@ export const userController = {
     async update(req: Request, res: Response) {
         const { userId } = req.params
 
-        if (!userId){
-            return res.status(404).json({ error: "Parametros faltando"})
+        if (!userId) {
+            return res.status(404).json({ error: "Parametros faltando" })
         }
 
         const userIdNum = Number(userId)
@@ -58,12 +68,12 @@ export const userController = {
 
     async delUser(req: Request, res: Response) {
         const { userId } = req.params;
-        
+
         if (!userId) {
             return res.status(404).json({ error: "Parametros faltando." });
         }
 
-        
+
         const userIdNum = Number(userId)
 
         try {
