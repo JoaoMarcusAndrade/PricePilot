@@ -8,15 +8,15 @@ type Props = {
 
 const steps = [
   { icon: Search, number: '01', title: 'Diga o que você procura', text: 'Conte para o PricePilot qual produto você quer comparar.' },
-  { icon: Zap, number: '02', title: 'A IA faz a busca', text: 'Nosso agente pesquisa preços, avaliações e condições em várias lojas.' },
+  { icon: Zap, number: '02', title: 'A busca encontra ofertas', text: 'O PricePilot consulta ofertas e condições publicadas pelas lojas participantes.' },
   { icon: Check, number: '03', title: 'Escolha com confiança', text: 'Receba uma recomendação clara para comprar pelo melhor custo-benefício.' },
 ];
 
-const trustedStores = ['Amazon', 'Mercado Livre', 'Magazine Luiza', 'Americanas', 'Shopee'];
+const trustedStores = ['KaBuM!'];
 
 export default function LandingPage({ onStart, onAuth }: Props) {
   return (
-    <div className="min-h-screen overflow-hidden bg-white">
+    <div className="min-h-screen overflow-x-hidden bg-white">
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
         <Logo />
         <nav className="hidden items-center gap-8 text-sm font-medium text-ink-600 md:flex">
@@ -24,7 +24,7 @@ export default function LandingPage({ onStart, onAuth }: Props) {
           <a href="#vantagens" className="transition-colors hover:text-brand-600">Vantagens</a>
           <button onClick={onAuth} className="rounded-full bg-ink-900 px-5 py-2.5 text-white transition-all hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/20">Entrar / cadastrar</button>
         </nav>
-        <button onClick={onAuth} className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white md:hidden">Entrar</button>
+        <button onClick={onAuth} className="min-h-11 rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white md:hidden">Entrar</button>
       </header>
 
       <main>
@@ -33,14 +33,14 @@ export default function LandingPage({ onStart, onAuth }: Props) {
           <div className="pointer-events-none absolute -left-32 top-56 h-80 w-80 rounded-full bg-accent-100/40 blur-3xl" />
           <div className="relative grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             <div className="animate-fade-in">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-brand-700">
+              <div className="mb-6 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-brand-700 sm:text-xs">
                 <Sparkles size={14} /> Seu assistente de compras inteligente
               </div>
-              <h1 className="max-w-xl font-display text-5xl font-extrabold leading-[1.08] tracking-tight text-ink-950 sm:text-6xl lg:text-[4.3rem]">
+              <h1 className="max-w-xl font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-ink-950 sm:text-6xl lg:text-[4.3rem]">
                 Compre melhor.<br /><span className="text-brand-600">Pague menos.</span>
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-600 sm:text-xl">
-                Converse com uma IA que pesquisa preços na internet, compara as melhores ofertas e ajuda você a tomar a decisão certa.
+                 Pesquise ofertas de hardware e receba uma recomendação clara para tomar a melhor decisão de compra.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <button onClick={() => onStart()} className="group inline-flex items-center justify-center gap-3 rounded-xl bg-brand-600 px-6 py-4 font-bold text-white shadow-xl shadow-brand-600/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-600/35">
@@ -60,15 +60,15 @@ export default function LandingPage({ onStart, onAuth }: Props) {
               <div className="absolute -inset-5 rounded-[2rem] bg-gradient-to-br from-brand-100/70 to-accent-100/40 blur-2xl" />
               <div className="relative overflow-hidden rounded-3xl border border-ink-200 bg-white shadow-2xl shadow-ink-900/10">
                 <div className="flex items-center justify-between border-b border-ink-100 bg-ink-50/80 px-5 py-4">
-                  <div className="flex items-center gap-3"><Logo size="sm" /><span className="text-xs font-semibold text-ink-500">Busca inteligente</span></div>
+                  <div className="flex min-w-0 items-center gap-3"><Logo size="sm" /><span className="hidden text-xs font-semibold text-ink-500 sm:inline">Busca inteligente</span></div>
                   <span className="flex items-center gap-1.5 text-xs font-medium text-brand-600"><span className="h-2 w-2 animate-pulse rounded-full bg-brand-500" /> Online</span>
                 </div>
                 <div className="space-y-5 p-5 sm:p-7">
-                  <div className="ml-auto max-w-[82%] rounded-2xl rounded-tr-sm bg-ink-900 px-4 py-3 text-sm leading-relaxed text-white shadow-md">Quero comprar um iPhone 15 Pro. Onde encontro o melhor preço?</div>
-                  <div className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700"><Sparkles size={15} /></div><div className="max-w-[88%] rounded-2xl rounded-tl-sm border border-ink-100 bg-ink-50 px-4 py-3 text-sm leading-relaxed text-ink-700">Encontrei <strong className="text-ink-900">5 ofertas</strong> para você. A melhor opção pelo custo-benefício está na <strong className="text-brand-700">Amazon</strong>, por R$ 6.499,00.</div></div>
+                  <div className="ml-auto max-w-[82%] rounded-2xl rounded-tr-sm bg-ink-900 px-4 py-3 text-sm leading-relaxed text-white shadow-md">Quero uma RTX 5070. Quais são as ofertas?</div>
+                  <div className="flex gap-3"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700"><Sparkles size={15} /></div><div className="max-w-[88%] rounded-2xl rounded-tl-sm border border-ink-100 bg-ink-50 px-4 py-3 text-sm leading-relaxed text-ink-700">Encontrei <strong className="text-ink-900">ofertas atuais</strong> na <strong className="text-brand-700">KaBuM!</strong> para você comparar.</div></div>
                   <div className="ml-11 grid gap-2.5 sm:grid-cols-2">
-                    <div className="rounded-xl border-2 border-brand-300 bg-brand-50/50 p-3"><div className="flex items-center justify-between"><span className="text-xs font-bold text-ink-700">Amazon</span><span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white">Melhor opção</span></div><p className="mt-2 text-lg font-bold text-ink-900">R$ 6.499,00</p><p className="mt-1 text-[11px] text-brand-700">Frete grátis · 4.8 ★</p></div>
-                    <div className="rounded-xl border border-ink-200 p-3"><span className="text-xs font-bold text-ink-700">Mercado Livre</span><p className="mt-2 text-lg font-bold text-ink-900">R$ 6.699,00</p><p className="mt-1 text-[11px] text-ink-500">Frete grátis · 4.7 ★</p></div>
+                    <div className="rounded-xl border-2 border-brand-300 bg-brand-50/50 p-3"><div className="flex items-center justify-between"><span className="text-xs font-bold text-ink-700">KaBuM!</span><span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white">Ofertas atuais</span></div><p className="mt-2 text-lg font-bold text-ink-900">Ofertas reais</p><p className="mt-1 text-[11px] text-brand-700">Consulte os valores atualizados no chat</p></div>
+                    <div className="rounded-xl border border-ink-200 p-3"><span className="text-xs font-bold text-ink-700">Hardware</span><p className="mt-2 text-lg font-bold text-ink-900">Busca focada</p><p className="mt-1 text-[11px] text-ink-500">GPU, CPU, SSD, memória e mais</p></div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 border-t border-ink-100 p-4"><span className="flex-1 rounded-xl bg-ink-50 px-4 py-3 text-xs text-ink-400">Pergunte outra coisa...</span><span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white"><ArrowRight size={16} /></span></div>

@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "tsc",
+    "test": "tsx --test src/**/*.test.ts",
     "start": "node dist/server.js"
   },
   "devDependencies": {

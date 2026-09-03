@@ -5,6 +5,7 @@ import {
     useState,
     type ReactNode
 } from "react";
+import { API_URL } from '@/lib/api';
 
 export type DemoUser = {
     id: string;
@@ -44,8 +45,6 @@ type AuthContextValue = {
 };
 
 const SESSION_KEY = "pricepilot.session";
-
-const API_URL = "http://localhost:3000/api";
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 

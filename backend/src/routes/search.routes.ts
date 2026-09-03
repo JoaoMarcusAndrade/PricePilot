@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { search } from '../controllers/search.controller'
+import { search } from "../controllers/search.controller.js";
 
 const router = Router();
 
-//realiza a entrada da pesquisa
-router.post('/search', search)
+router.post("/", search);
 
-export default router
+export default router;

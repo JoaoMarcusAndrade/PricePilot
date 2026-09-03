@@ -1,6 +1,5 @@
 import type { Chat, Message } from '@/types';
-
-const API_URL = 'http://localhost:3000/api';
+import { API_URL } from '@/lib/api';
 
 type BackendChat = {
   id: number;
@@ -18,8 +17,6 @@ type CreateChatData = {
 function getUserId(): number | null {
   try {
     const session = localStorage.getItem('pricepilot.session');
-
-    console.log("SESSION:", session)
 
     if (!session) {
       return null;
@@ -129,8 +126,6 @@ export async function saveChat(chat: Chat): Promise<BackendChat | null> {
 
     const savedChat = await response.json();
 
-    console.log('CHAT SALVO:', savedChat);
-
     return savedChat;
 
   } catch (error) {
@@ -176,8 +171,6 @@ export async function updateChat(
     }
 
     const updatedChat = await response.json();
-
-    console.log('CHAT ATUALIZADO:', updatedChat);
 
     return updatedChat;
 

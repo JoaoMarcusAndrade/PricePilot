@@ -37,6 +37,10 @@ Entre o usuário e as APIs das lojas há uma camada de inteligência artificial 
 2. Execute `npm install`
 3. Inicie em modo de desenvolvimento com `npm run dev`
 
+### Acesso pelo celular
+
+Com o computador e o celular na mesma rede Wi-Fi, execute `npm run dev` e abra no celular o endereço `Network` exibido pelo Vite, normalmente `http://SEU_IP_LOCAL:5173`. O Vite encaminha as chamadas da interface para a API local, sem expor o backend na rede.
+
 ## Estrutura sugerida
 
 - `packages/backend` - API Express e lógica de regra de negócios

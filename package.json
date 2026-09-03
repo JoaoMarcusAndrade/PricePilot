@@ -20,10 +20,20 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces",
+    "dev": "concurrently --names frontend,backend --kill-others-on-fail \"npm run dev:frontend\" \"wait-on http://localhost:5173 && npm run dev:backend\"",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
     "build": "npm run build --workspaces",
     "start": "npm run start -w backend"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "sqlite3@6.0.1": true,
+    "esbuild@0.28.1": true,
+    "esbuild@0.21.5": true
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "wait-on": "^9.1.0"
   }
 }

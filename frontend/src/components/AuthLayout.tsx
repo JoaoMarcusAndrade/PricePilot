@@ -15,7 +15,7 @@ export default function AuthLayout({ onBack, children }: Props) {
           <Logo />
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-800"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-800"
           >
             <ArrowLeft size={17} /> Início
           </button>

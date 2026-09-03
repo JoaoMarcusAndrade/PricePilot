@@ -16,10 +16,9 @@ import {
 import Logo from '@/components/Logo';
 import ProductCard from '@/components/ProductCard';
 import {
-  buildAssistantReply,
   searchProducts,
   SUGGESTIONS
-} from '@/lib/mockSearch';
+} from '@/lib/search';
 
 import {
   loadChats,
@@ -27,6 +26,7 @@ import {
   newMessage,
   saveChat,
   updateChat,
+  deleteChat,
   titleFromPrompt
 } from '@/lib/history';
 
@@ -75,34 +75,14 @@ export default function ChatPage({ onBack, onAccount }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loadingChats, setLoadingChats] = useState(true);
 
-  useEffect(() => {
-    async function loadHistory() {
-      const history = await loadChats();
-
-      setChats(history);
-
-      if (history.length > 0) {
-        setActiveId(history[0].id);
-      }
-
-      setLoadingChats(false);
-    }
-
-    loadHistory();
-  }, []);
-
   const [input, setInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isSubmittingRef = useRef(false);
 
-  /*
-   * Carrega o histórico do backend quando a página abre.
-   *
-   * loadChats() agora é async, então não podemos colocá-lo
-   * diretamente dentro do useState.
-   */
   useEffect(() => {
     async function loadHistory() {
       try {
@@ -171,17 +151,19 @@ export default function ChatPage({ onBack, onAccount }: Props) {
       setActiveId(nextChat?.id ?? null);
     }
 
-    /*
-     * O delete no backend será chamado aqui depois.
-     */
+    if (!Number.isNaN(Number(id))) {
+      await deleteChat(id);
+    }
   }
 
-  function submit(prompt = input) {
+  async function submit(prompt = input) {
     const value = prompt.trim();
 
-    if (!value || isSearching) {
+    if (!value || isSubmittingRef.current) {
       return;
     }
+
+    isSubmittingRef.current = true;
 
     let chat = activeChat;
 
@@ -236,17 +218,12 @@ export default function ChatPage({ onBack, onAccount }: Props) {
     setInput('');
     setIsSearching(true);
 
-    window.setTimeout(async () => {
-      const products = searchProducts(value);
-
-      const assistantMessage = newMessage(
-        'assistant',
-        buildAssistantReply(value, products),
-        {
-          products,
-          status: 'done'
-        }
-      );
+    try {
+      const { products, summary } = await searchProducts(value);
+      const assistantMessage = newMessage('assistant', summary, {
+        products,
+        status: 'done'
+      });
 
       const finalChat: Chat = {
         ...updatedChat,
@@ -263,13 +240,6 @@ export default function ChatPage({ onBack, onAccount }: Props) {
             ? finalChat
             : item
         )
-      );
-
-      console.log("FINAL CHAT:", finalChat);
-      console.log("MESSAGES:", finalChat.messages);
-      console.log(
-        "CONTENT QUE VAI PRO BANCO:",
-        JSON.stringify(finalChat.messages)
       );
 
       if (Number.isNaN(Number(finalChat.id))) {
@@ -290,9 +260,42 @@ export default function ChatPage({ onBack, onAccount }: Props) {
       } else {
         await updateChat(finalChat);
       }
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : 'Não foi possível pesquisar ofertas na KaBuM agora.';
+      const finalChat: Chat = {
+        ...updatedChat,
+        updatedAt: Date.now(),
+        messages: [
+          ...updatedChat.messages,
+          newMessage('assistant', message, { status: 'done' })
+        ]
+      };
 
+      setChats(prev => prev.map(item =>
+        item.id === updatedChat.id ? finalChat : item
+      ));
+
+      if (Number.isNaN(Number(finalChat.id))) {
+        const savedChat = await saveChat(finalChat);
+
+        if (savedChat) {
+          setChats(prev => prev.map(item =>
+            item.id === finalChat.id ? { ...item, id: String(savedChat.id) } : item
+          ));
+        }
+      } else {
+        await updateChat(finalChat);
+      }
+    } finally {
       setIsSearching(false);
-    }, 1100);
+      isSubmittingRef.current = false;
+    }
+  }
+
+  function submitCurrentInput() {
+    void submit(inputRef.current?.value ?? input);
   }
 
   if (loadingChats) {
@@ -310,7 +313,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-50">
+    <div className="flex h-dvh overflow-hidden bg-ink-50">
 
       <aside
         className={`${sidebarOpen
@@ -324,7 +327,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
           <button
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-2 text-ink-400 hover:bg-ink-50 md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-lg text-ink-400 hover:bg-ink-50 md:hidden"
           >
             <X size={18} />
           </button>
@@ -399,7 +402,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                         e.stopPropagation();
                         removeChat(chat.id);
                       }}
-                      className="hidden rounded p-1 text-ink-300 hover:bg-white hover:text-error-500 group-hover:block"
+                      className="grid h-11 w-11 place-items-center rounded-lg text-ink-300 hover:bg-white hover:text-error-500 sm:hidden sm:h-7 sm:w-7 sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -453,7 +456,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-ink-500 hover:bg-ink-50 md:hidden"
+              className="grid h-11 w-11 place-items-center rounded-lg text-ink-500 hover:bg-ink-50 md:hidden"
             >
               <Menu size={20} />
             </button>
@@ -515,7 +518,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                 </h1>
 
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-500">
-                  Eu pesquiso em várias lojas, comparo preços e encontro a melhor opção para você.
+                  Eu pesquiso as ofertas da KaBuM e organizo os preços disponíveis para você.
                 </p>
 
                 <div className="mt-8 grid w-full max-w-xl gap-2 sm:grid-cols-2">
@@ -523,7 +526,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                   {SUGGESTIONS.map(suggestion => (
                     <button
                       key={suggestion}
-                      onClick={() => submit(suggestion)}
+                      onClick={() => void submit(suggestion)}
                       className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 text-left text-sm font-medium text-ink-700 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
                     >
                       <Search
@@ -642,19 +645,20 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
         </section>
 
-        <div className="border-t border-ink-200 bg-white px-4 py-4 sm:px-8">
+        <div className="border-t border-ink-200 bg-white px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-8 sm:pb-4">
 
           <div className="mx-auto max-w-3xl">
 
             <form
               onSubmit={e => {
                 e.preventDefault();
-                submit();
+                submitCurrentInput();
               }}
               className="flex items-end gap-2 rounded-2xl border border-ink-200 bg-ink-50 p-2 transition-all focus-within:border-brand-400 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-brand-500/10"
             >
 
               <textarea
+                ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => {
@@ -663,21 +667,20 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                     !e.shiftKey
                   ) {
                     e.preventDefault();
-                    submit();
+                    submitCurrentInput();
                   }
                 }}
                 rows={1}
                 placeholder="Digite o produto que você está procurando..."
-                className="max-h-32 min-h-[42px] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-ink-800 outline-none placeholder:text-ink-400"
+                className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-base text-ink-800 outline-none placeholder:text-ink-400 sm:text-sm"
               />
 
               <button
-                type="submit"
-                disabled={
-                  !input.trim() ||
-                  isSearching
-                }
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-600 text-white transition-all hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-ink-200"
+                type="button"
+                onPointerDown={submitCurrentInput}
+                onClick={submitCurrentInput}
+                disabled={isSearching}
+                 className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white transition-all hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-ink-200"
               >
                 <ArrowUp size={18} />
               </button>
@@ -686,7 +689,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
             <p className="mt-2 flex items-center justify-center gap-1 text-center text-[10px] text-ink-400">
               <Clock3 size={11} />
-              As ofertas são simuladas nesta demonstração
+              Preços consultados na KaBuM no momento da busca
             </p>
 
           </div>
