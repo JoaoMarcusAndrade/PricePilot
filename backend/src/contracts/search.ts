@@ -1,4 +1,4 @@
-export type Marketplace = "kabum";
+export type Marketplace = "kabum" | "terabyte" | "pichau" | "patoloco";
 
 export type Availability = "in-stock" | "out-of-stock" | "unknown";
 
@@ -33,6 +33,6 @@ export type SearchResponse = {
   query: string;
   searchedAt: string;
   offers: Offer[];
-  source: SearchSource;
+  sources: SearchSource[];
   summary: string;
 };

@@ -1,9 +1,9 @@
-import type { Product } from '@/types';
+import type { Product, SearchSource } from '@/types';
 import { API_URL } from '@/lib/api';
 
 type BackendOffer = {
   id: string;
-  marketplace: 'kabum';
+  marketplace: 'kabum' | 'terabyte' | 'pichau' | 'patoloco';
   title: string;
   url: string;
   price: number;
@@ -20,6 +20,7 @@ type BackendOffer = {
 
 type SearchResponse = {
   offers: BackendOffer[];
+  sources: SearchSource[];
   summary: string;
 };
 
@@ -30,10 +31,19 @@ function availabilityLabel(availability: BackendOffer['availability']): string |
 }
 
 function toProduct(offer: BackendOffer, index: number): Product {
+  // Keep marketplace presentation in one place as new stores are added.
+  const store = offer.marketplace === 'kabum'
+    ? { name: 'KaBuM!', logoUrl: 'https://static.kabum.com.br/conteudo/icons/logo.svg', color: '#ff6500' }
+    : offer.marketplace === 'terabyte'
+      ? { name: 'Terabyte', logoUrl: 'https://img.terabyteshop.com.br/terabyte-logo.svg', color: '#ff5510' }
+      : offer.marketplace === 'pichau'
+        ? { name: 'Pichau', logoUrl: undefined, color: '#e30613' }
+        : { name: 'Patoloco', logoUrl: 'https://patoloco.com.br/img/svg/logo-horizontal.svg', color: '#171533' };
+
   return {
     id: offer.id,
     name: offer.title,
-    store: 'KaBuM!',
+    store: store.name,
     price: offer.price,
     priceLabel: offer.priceType === 'cash' ? 'Preço à vista' : 'Preço anunciado',
     originalPrice: offer.originalPrice,
@@ -45,14 +55,15 @@ function toProduct(offer: BackendOffer, index: number): Product {
     installmentsInterestFree: offer.installmentsInterestFree,
     availability: availabilityLabel(offer.availability),
     imageUrl: offer.imageUrl,
-    storeLogoUrl: 'https://static.kabum.com.br/conteudo/icons/logo.svg',
+    storeLogoUrl: store.logoUrl,
     badge: index === 0 ? 'Mais barato' : undefined,
-    logoColor: '#ff6500',
+    logoColor: store.color,
   };
 }
 
 export async function searchProducts(query: string): Promise<{
   products: Product[];
+  sources: SearchSource[];
   summary: string;
 }> {
   const response = await fetch(`${API_URL}/search`, {
@@ -69,12 +80,13 @@ export async function searchProducts(query: string): Promise<{
     throw new Error(
       data && 'error' in data && data.error
         ? data.error
-        : 'Não foi possível pesquisar ofertas na KaBuM agora.',
+        : 'Não foi possível pesquisar ofertas agora.',
     );
   }
 
   return {
     products: data.offers.map(toProduct),
+    sources: data.sources ?? [],
     summary: data.summary,
   };
 }

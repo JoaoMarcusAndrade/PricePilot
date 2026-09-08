@@ -1,8 +1,12 @@
-import type { SearchResponse } from "../contracts/search.js";
+import type { Marketplace, Offer, SearchResponse, SearchSource } from "../contracts/search.js";
 import { searchKabum } from "./marketplaces/kabum.provider.js";
+import { searchPatoloco } from "./marketplaces/patoloco.provider.js";
+import { searchPichau } from "./marketplaces/pichau.provider.js";
+import { searchTerabyte } from "./marketplaces/terabyte.provider.js";
 
 const MAX_QUERY_LENGTH = 120;
-const RESULTS_PER_SEARCH = 5;
+const RESULTS_PER_MARKETPLACE = 5;
+const EXPECTED_SOURCE_RESULTS = RESULTS_PER_MARKETPLACE;
 const CACHE_MAX_ENTRIES = Number(process.env.KABUM_SEARCH_CACHE_MAX_ENTRIES ?? 100);
 const CACHE_TTL_MS = Number(process.env.KABUM_SEARCH_CACHE_TTL_MS ?? 15 * 60 * 1000);
 
@@ -49,7 +53,7 @@ function formatBRL(value: number): string {
 
 function buildSummary(query: string, offers: SearchResponse["offers"]): string {
   if (offers.length === 0) {
-    return `Não encontrei ofertas da KaBuM para "${query}" agora. Tente informar marca, modelo ou especificações do hardware.`;
+    return `Não encontrei ofertas nas lojas consultadas para "${query}" agora. Tente informar marca, modelo ou especificações do hardware.`;
   }
 
   const cheapest = offers[0];
@@ -58,7 +62,15 @@ function buildSummary(query: string, offers: SearchResponse["offers"]): string {
     ? "menor preço à vista"
     : "menor preço anunciado";
 
-  return `Encontrei **${offers.length} ${countLabel}** na KaBuM para "${query}". O ${priceLabel} é **${formatBRL(cheapest.price)}** para **${cheapest.title}**.`;
+  const marketplaceName = cheapest.marketplace === "kabum"
+    ? "KaBuM"
+    : cheapest.marketplace === "terabyte"
+      ? "Terabyte"
+      : cheapest.marketplace === "pichau"
+        ? "Pichau"
+        : "Patoloco";
+
+  return `Encontrei **${offers.length} ${countLabel}** para "${query}". O ${priceLabel} é **${formatBRL(cheapest.price)}** na **${marketplaceName}** para **${cheapest.title}**.`;
 }
 
 function cleanExpiredEntries(now: number) {
@@ -74,14 +86,28 @@ function cacheKey(query: string): string {
 }
 
 async function collectSearch(query: string): Promise<SearchResponse> {
-  let offers;
+  const providers: Array<{ marketplace: Marketplace; search: () => Promise<Offer[]> }> = [
+    { marketplace: "kabum", search: () => searchKabum(query, RESULTS_PER_MARKETPLACE) },
+    { marketplace: "terabyte", search: () => searchTerabyte(query, RESULTS_PER_MARKETPLACE) },
+    { marketplace: "pichau", search: () => searchPichau(query, RESULTS_PER_MARKETPLACE) },
+    { marketplace: "patoloco", search: () => searchPatoloco(query, RESULTS_PER_MARKETPLACE) },
+  ];
+  // A failure from one store must not discard offers collected from the other store.
+  const results = await Promise.allSettled(providers.map((provider) => provider.search()));
+  const sources: SearchSource[] = results.map((result, index) => {
+    const marketplace = providers[index].marketplace;
 
-  try {
-    offers = await searchKabum(query, RESULTS_PER_SEARCH);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Falha desconhecida na KaBuM.";
+    if (result.status === "fulfilled") {
+      return { marketplace, status: "ok", resultCount: result.value.length };
+    }
 
-    throw new SearchSourceError(message);
+    const message = result.reason instanceof Error ? result.reason.message : "Falha desconhecida.";
+    return { marketplace, status: "unavailable", resultCount: 0, message };
+  });
+  const offers = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+
+  if (offers.length === 0 && sources.every((source) => source.status === "unavailable")) {
+    throw new SearchSourceError(sources.map((source) => source.message).filter(Boolean).join(" "));
   }
 
   offers.sort((first, second) =>
@@ -91,12 +117,9 @@ async function collectSearch(query: string): Promise<SearchResponse> {
   return {
     query,
     searchedAt: new Date().toISOString(),
+    // Preserve four offers from each marketplace, then expose the combined list by price.
     offers,
-    source: {
-      marketplace: "kabum",
-      status: "ok",
-      resultCount: offers.length,
-    },
+    sources,
     summary: buildSummary(query, offers),
   };
 }
@@ -128,10 +151,17 @@ export async function searchOffers(query: string): Promise<SearchResponse> {
         }
       }
 
-      cache.set(key, {
-        expiresAt: now + CACHE_TTL_MS,
-        response,
-      });
+      // Incomplete searches must be retried instead of preserving a temporary store failure for 15 minutes.
+      const isComplete = response.sources.every(
+        (source) => source.status === "ok" && source.resultCount >= EXPECTED_SOURCE_RESULTS,
+      );
+
+      if (isComplete) {
+        cache.set(key, {
+          expiresAt: now + CACHE_TTL_MS,
+          response,
+        });
+      }
 
       return response;
     })

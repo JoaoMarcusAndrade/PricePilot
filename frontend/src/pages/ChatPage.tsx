@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 import Logo from '@/components/Logo';
-import ProductCard from '@/components/ProductCard';
+import OfferTabs from '@/components/OfferTabs';
 import {
   searchProducts,
   SUGGESTIONS
@@ -219,9 +219,10 @@ export default function ChatPage({ onBack, onAccount }: Props) {
     setIsSearching(true);
 
     try {
-      const { products, summary } = await searchProducts(value);
+      const { products, sources, summary } = await searchProducts(value);
       const assistantMessage = newMessage('assistant', summary, {
         products,
+        sources,
         status: 'done'
       });
 
@@ -518,7 +519,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                 </h1>
 
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-500">
-                  Eu pesquiso as ofertas da KaBuM e organizo os preços disponíveis para você.
+                  Eu comparo ofertas da KaBuM, Terabyte, Pichau e Patoloco para você.
                 </p>
 
                 <div className="mt-8 grid w-full max-w-xl gap-2 sm:grid-cols-2">
@@ -597,18 +598,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
                           </div>
 
-                          {message.products && (
-                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-
-                              {message.products.map(product => (
-                                <ProductCard
-                                  key={product.id}
-                                  product={product}
-                                />
-                              ))}
-
-                            </div>
-                          )}
+                          {message.products && <OfferTabs products={message.products} sources={message.sources} />}
                         </>
                       ) : (
                         message.content
@@ -680,7 +670,8 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                 onPointerDown={submitCurrentInput}
                 onClick={submitCurrentInput}
                 disabled={isSearching}
-                 className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white transition-all hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-ink-200"
+                 aria-label="Enviar busca"
+                 className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white transition-all hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-ink-200"
               >
                 <ArrowUp size={18} />
               </button>
@@ -689,7 +680,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
 
             <p className="mt-2 flex items-center justify-center gap-1 text-center text-[10px] text-ink-400">
               <Clock3 size={11} />
-              Preços consultados na KaBuM no momento da busca
+              Preços consultados nas lojas parceiras no momento da busca
             </p>
 
           </div>

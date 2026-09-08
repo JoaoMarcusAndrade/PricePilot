@@ -46,7 +46,7 @@ export async function search(req: Request, res: Response) {
 
     if (error instanceof SearchSourceError) {
       return res.status(502).json({
-        error: "A KaBuM não respondeu à busca agora. Tente novamente em alguns instantes.",
+        error: "As lojas não responderam à busca agora. Tente novamente em alguns instantes.",
       });
     }
 

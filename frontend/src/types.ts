@@ -20,12 +20,20 @@ export type Product = {
   logoColor: string;
 };
 
+export type SearchSource = {
+  marketplace: 'kabum' | 'terabyte' | 'pichau' | 'patoloco';
+  status: 'ok' | 'unavailable';
+  resultCount: number;
+  message?: string;
+};
+
 export type Message = {
   id: string;
   role: Role;
   content: string;
   createdAt: number;
   products?: Product[];
+  sources?: SearchSource[];
   status?: 'searching' | 'thinking' | 'done';
 };
 
