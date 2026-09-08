@@ -12,6 +12,7 @@ interface updateChatDTO {
 
 export async function getHistory(userId: number) {
     try {
+        // The chat endpoint can reuse this ordered history as context for an AI conversation.
         const userHistory = await Chat.findAll({
             where: {
                 userId

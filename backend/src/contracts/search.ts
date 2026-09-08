@@ -4,6 +4,7 @@ export type Availability = "in-stock" | "out-of-stock" | "unknown";
 
 export type PriceType = "cash" | "listed";
 
+// All marketplace-specific parsers are converted to this shape before reaching the frontend.
 export type Offer = {
   id: string;
   marketplace: Marketplace;

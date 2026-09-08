@@ -28,6 +28,7 @@ function canSearch(clientId: string): boolean {
 }
 
 export async function search(req: Request, res: Response) {
+  // Scraping runs against external stores, so limit requests per client before doing any work.
   if (!canSearch(req.ip || "unknown")) {
     return res.status(429).json({
       error: "Aguarde um minuto antes de fazer novas buscas.",
@@ -35,6 +36,8 @@ export async function search(req: Request, res: Response) {
   }
 
   try {
+    // This performs structural validation only. The future chat service must first decide
+    // whether a natural-language message is a permitted hardware search.
     const { query } = parseSearchRequest(req.body);
     const response = await searchOffers(query);
 

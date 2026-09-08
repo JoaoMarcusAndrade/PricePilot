@@ -20,6 +20,7 @@ export const app = express();
 export const __filename = fileURLToPath(import.meta.url);
 export const _dirname = path.dirname(__filename);
 
+// Models are registered before this call so Sequelize can create/update their tables on startup.
 sequelize.sync()
     .then(() => {
         console.log("Banco sincronizado");
@@ -27,10 +28,10 @@ sequelize.sync()
 
 app.use(cors())
 
+// API clients send JSON; the limit prevents unexpectedly large request bodies from reaching services.
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(express.static(path.join(_dirname, "views")));
 
 app.use(router);
-

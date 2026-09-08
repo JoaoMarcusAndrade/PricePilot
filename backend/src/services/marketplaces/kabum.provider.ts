@@ -122,6 +122,7 @@ function imageUrl(value: unknown): string | undefined {
 }
 
 function nextDataProducts(html: string): unknown[] {
+  // KaBuM embeds its search catalog in Next.js page data; prefer it over fragile HTML parsing.
   const match = html.match(
     /<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i,
   );
@@ -268,6 +269,7 @@ function offerFromJsonLd(item: unknown, collectedAt: string): Offer | undefined 
 export function parseKabumSearchPage(html: string, limit: number): Offer[] {
   const collectedAt = new Date().toISOString();
   const products = nextDataProducts(html);
+  // JSON-LD is less complete, but keeps the search usable if KaBuM changes its Next.js payload.
   const candidates = products.length > 0 ? products : fallbackProducts(html);
   const offers: Offer[] = [];
   const seenUrls = new Set<string>();

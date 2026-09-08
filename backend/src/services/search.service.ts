@@ -16,6 +16,7 @@ type CacheEntry = {
 };
 
 const cache = new Map<string, CacheEntry>();
+// Requests for the same item share one scrape instead of hitting every store repeatedly.
 const inFlightSearches = new Map<string, Promise<SearchResponse>>();
 
 export class SearchInputError extends Error {}
@@ -33,6 +34,8 @@ export function parseSearchRequest(body: unknown): { query: string } {
     throw new SearchInputError("Informe o produto que deseja pesquisar.");
   }
 
+  // Normalization makes cache keys and URLs consistent; it does not decide whether the
+  // requested product belongs to the supported hardware catalog.
   const normalizedQuery = query.trim().replace(/\s+/g, " ");
 
   if (!normalizedQuery || normalizedQuery.length > MAX_QUERY_LENGTH) {
@@ -86,6 +89,7 @@ function cacheKey(query: string): string {
 }
 
 async function collectSearch(query: string): Promise<SearchResponse> {
+  // Providers expose different HTML structures but all return the same Offer contract.
   const providers: Array<{ marketplace: Marketplace; search: () => Promise<Offer[]> }> = [
     { marketplace: "kabum", search: () => searchKabum(query, RESULTS_PER_MARKETPLACE) },
     { marketplace: "terabyte", search: () => searchTerabyte(query, RESULTS_PER_MARKETPLACE) },
@@ -133,6 +137,7 @@ export async function searchOffers(query: string): Promise<SearchResponse> {
     return cached.response;
   }
 
+  // Reuse an active scrape while it is running, then remove it whether it succeeds or fails.
   const pendingSearch = inFlightSearches.get(key);
 
   if (pendingSearch) {

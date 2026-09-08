@@ -29,6 +29,8 @@ router.get('/', (req,res) => {
     res.sendFile(path.join(_dirname, "views", "index.html"))
 });
 
+// Each route group owns a distinct responsibility. A future /api/chat route should interpret
+// natural-language requests before calling the existing /api/search flow.
 router.use('/api/users', userRoutes)
 router.use('/api/history', historyRoutes)
 router.use('/api/search', searchRoutes)
