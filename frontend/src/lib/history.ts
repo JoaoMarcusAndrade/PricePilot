@@ -14,7 +14,7 @@ type CreateChatData = {
   content: string;
 };
 
-function getUserId(): number | null {
+export function getUserId(): number | null {
   try {
     const session = localStorage.getItem('pricepilot.session');
 

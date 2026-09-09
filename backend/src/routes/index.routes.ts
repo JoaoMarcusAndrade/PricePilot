@@ -12,6 +12,7 @@ import path from 'path'
 import userRoutes from './user.routes.js'
 import historyRoutes from './history.routes.js'
 import searchRoutes from './search.routes.js'
+import chatRoutes from './chat.routes.js'
 
 
 export const router = Router()
@@ -34,3 +35,4 @@ router.get('/', (req,res) => {
 router.use('/api/users', userRoutes)
 router.use('/api/history', historyRoutes)
 router.use('/api/search', searchRoutes)
+router.use('/api/chat', chatRoutes)

@@ -18,6 +18,8 @@ type BackendOffer = {
   reviewCount?: number;
 };
 
+export type { BackendOffer };
+
 type SearchResponse = {
   offers: BackendOffer[];
   sources: SearchSource[];
@@ -30,7 +32,7 @@ function availabilityLabel(availability: BackendOffer['availability']): string |
   return undefined;
 }
 
-function toProduct(offer: BackendOffer, index: number): Product {
+export function toProduct(offer: BackendOffer, index: number): Product {
   // Keep marketplace presentation in one place as new stores are added.
   const store = offer.marketplace === 'kabum'
     ? { name: 'KaBuM!', logoUrl: 'https://static.kabum.com.br/conteudo/icons/logo.svg', color: '#ff6500' }

@@ -56,7 +56,7 @@ export async function loginUser(email: number, pass: string) {
         throw new Error("Email ou senha inválidos.");
     }
 
-    if (await bcrypt.compare(user.pass, pass)){
+    if (!(await bcrypt.compare(pass, user.pass))){
         throw new Error("Email ou senha inválidos.")
     }
 

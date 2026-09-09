@@ -16,11 +16,11 @@ import {
 import Logo from '@/components/Logo';
 import OfferTabs from '@/components/OfferTabs';
 import {
-  searchProducts,
   SUGGESTIONS
 } from '@/lib/search';
 
 import {
+  getUserId,
   loadChats,
   newChat,
   newMessage,
@@ -29,6 +29,8 @@ import {
   deleteChat,
   titleFromPrompt
 } from '@/lib/history';
+
+import { sendChatMessage } from '@/lib/chat';
 
 import type { Chat } from '@/types';
 
@@ -219,10 +221,18 @@ export default function ChatPage({ onBack, onAccount }: Props) {
     setIsSearching(true);
 
     try {
-      const { products, sources, summary } = await searchProducts(value);
-      const assistantMessage = newMessage('assistant', summary, {
-        products,
-        sources,
+      const result = await sendChatMessage({
+        message: value,
+        userId: getUserId(),
+        chatId: chat.id,
+      });
+      const assistantMessage = newMessage('assistant', result.reply, {
+        products: result.intent === 'search' && result.products.length > 0
+          ? result.products
+          : undefined,
+        sources: result.intent === 'search' && result.products.length > 0
+          ? result.sources
+          : undefined,
         status: 'done'
       });
 
@@ -264,7 +274,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : 'Não foi possível pesquisar ofertas na KaBuM agora.';
+        : 'Não foi possível processar sua mensagem agora.';
       const finalChat: Chat = {
         ...updatedChat,
         updatedAt: Date.now(),
@@ -661,7 +671,7 @@ export default function ChatPage({ onBack, onAccount }: Props) {
                   }
                 }}
                 rows={1}
-                placeholder="Digite o produto que você está procurando..."
+                placeholder="Descreva o hardware que você quer comprar..."
                 className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-base text-ink-800 outline-none placeholder:text-ink-400 sm:text-sm"
               />
 

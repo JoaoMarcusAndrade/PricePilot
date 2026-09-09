@@ -12,6 +12,6 @@ export default function AuthPage({ onBack, onSuccess }: Props) {
   const { signIn, signUp, signInWithGoogle } = useAuth();
 
   return <AuthLayout onBack={onBack}>
-    {mode === 'login' ? <LoginForm onSubmit={async (email, password) => { const result = await signIn(email, password); if (!result.error) onSuccess(); return result; }} onGoogle={async () => { await signInWithGoogle(); onSuccess(); }} onToggle={() => setMode('signup')} /> : <SignupForm onSubmit={async (name, email, password) => { const result = await signUp(name, email, password); if (!result.error) onSuccess(); return result; }} onGoogle={async () => { await signInWithGoogle(); onSuccess(); }} onToggle={() => setMode('login')} />}
+    {mode === 'login' ? <LoginForm onSubmit={async (email, password) => { const result = await signIn(email, password); if (!result.error) onSuccess(); return result; }} onGoogle={async () => { const result = await signInWithGoogle(); if (!result.error) onSuccess(); return result; }} onToggle={() => setMode('signup')} /> : <SignupForm onSubmit={async (name, email, password) => { const result = await signUp(name, email, password); if (!result.error) onSuccess(); return result; }} onGoogle={async () => { const result = await signInWithGoogle(); if (!result.error) onSuccess(); return result; }} onToggle={() => setMode('login')} />}
   </AuthLayout>;
 }
